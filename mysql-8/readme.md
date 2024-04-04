@@ -26,3 +26,6 @@ FLUSH PRIVILEGES;"
   SOURCE_PASSWORD='replicaPassword',
   SOURCE_AUTO_POSITION=1;
 START REPLICA;"
+
+
+### Once above commands and configuration done connect to read replica and check if all tables and data are synced on read replica node.
