@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+  mysql-primary:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD-rootpassword}
+      MYSQL_DATABASE: shop_db
+    command: --default-authentication-plugin=mysql_native_password --server-id=1 --log-bin=mysql-bin --binlog-format=ROW --gtid-mode=ON --enforce-gtid-consistency=ON
+    volumes:
+      - ./mysql8-primary:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - app-network
+
+  mysql-replica1:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD-rootpassword}
+    ports:
+      - "3308:3306"
+    command: --default-authentication-plugin=mysql_native_password --server-id=2 --log-bin=mysql-bin --binlog-format=ROW --gtid-mode=ON --enforce-gtid-consistency=ON --read-only=1 --skip-slave-start
+    volumes:
+      - ./mysql8-repl1:/var/lib/mysql
+    depends_on:
+      - mysql-primary
+    networks:
+      - app-network
+
+  mysql-replica2:
+    image: mysql:8.0
+    volumes:
+      - ./mysql8-repl2:/var/lib/mysql
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD-rootpassword}
+    command: --default-authentication-plugin=mysql_native_password --server-id=3 --log-bin=mysql-bin --binlog-format=ROW --gtid-mode=ON --enforce-gtid-consistency=ON --read-only=1 --skip-slave-start
+    depends_on:
+      - mysql-primary
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
